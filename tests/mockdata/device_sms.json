@@ -1,0 +1,9 @@
+{
+    "Device":{
+        "ID": 2,
+        "Name": "Text",
+        "Category": "Notification",
+        "Type": "SMS"
+        
+    }
+}

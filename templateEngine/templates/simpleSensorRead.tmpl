@@ -1,0 +1,82 @@
+import time
+import requests
+{{if eq .Device.Type "Temp_Hum"}}import Adafruit_DHT{{else}}import RPi.GPIO as GPIO{{end}}
+
+url = "http://192.168.1.112:8080/data-entry/add"
+PIN1 = {{.Device.Pin1}}
+PIN2 = {{.Device.Pin2}}
+PIN3 = {{.Device.Pin3}}
+deviceID = {{.Device.ID}}
+deviceType ="{{.Device.Type}}"
+unit = ""
+value = ""
+{{if eq .Device.Type "Temp_Hum"}}
+#Temperature_Humidity sensor read
+DHT_SENSOR = Adafruit_DHT.DHT11
+DHT_PIN = PIN1
+didRead = 0
+temp_f = 0
+unit = "F"
+while not didRead:
+	humidity, temperature = Adafruit_DHT.read(DHT_SENSOR,DHT_PIN)
+	if humidity is not None and temperature is not None:
+		temp_f = ((temperature*(9/5))+32)
+		print("Temp={0:0.1f}C Humidity={1:0.1f}%".format(temp_f,humidity))
+		didRead = 1
+		value = temp_f
+	else:
+		print("Sensor failure. Check wiring.")
+	time.sleep(3);
+myobj = {"DataEntry": {"Device_ID": deviceID,"Type": deviceType ,"Value": humidity,"Unit": "Percent"}}
+post_response = requests.post(url, json = myobj)
+post_response_json = post_response.json()
+{{else}}{{if eq .Device.Type "Motion"}}
+#Read motion sensor distance
+Unit ="Motion"
+GPIO.setmode(GPIO.BCM)
+unit = "CM"
+TRIG = PIN1
+ECHO = PIN2
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.output(TRIG,0)
+GPIO.setup(ECHO, GPIO.IN)
+time.sleep(0.1)
+print("Starting measurement...")
+GPIO.output(TRIG,1)
+time.sleep(0.00001)
+GPIO.output(TRIG,0)
+while GPIO.input(ECHO)==0:
+	pass
+start = time.time()
+while GPIO.input(ECHO)== 1:
+	pass
+stop = time.time()
+distance = (stop-start)*17000
+print(distance)
+value = distance
+{{else}}{{if eq .Device.Type "Light"}}#Light sensor 
+unit ="Light/DARK"
+didRead=0
+GPIO.setmode(GPIO.BCM)
+LD_PIN = PIN1
+GPIO.setup(LD_PIN,GPIO.OUT)
+while (not didRead):
+	LD_IN =  GPIO.input(LD_PIN)
+	print(LD_IN)
+	if LD_IN == 1:
+		print("dark")
+		didRead = 1
+	else:
+		print("light")
+		didRead = 1
+	time.sleep(3)
+value = LD_IN
+{{else}}#do Nothing{{end}}{{end}}{{end}}
+{{if or (eq .Device.Type "Temp_Hum") (eq .Device.Type "Motion") (eq .Device.Type "Light") }}
+#Save data entry to DB
+print("Saving to DB")
+myobj = {"DataEntry": {"Device_ID": deviceID,"Type": deviceType ,"Value": value,"Unit": unit}}
+post_response = requests.post(url, json = myobj)
+post_response_json = post_response.json()
+print(post_response_json)
+{{end}}

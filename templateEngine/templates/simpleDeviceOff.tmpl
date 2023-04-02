@@ -1,0 +1,14 @@
+#!/usr/bin/python
+import RPi.GPIO as GPIO
+import time as t
+import datetime
+
+##Device {{.Job.DeviceOnOff}} script for {{.Device.Name}}
+#Set device pin
+DPIN= {{.Device.Pin1}}
+#Use Braodcom pinout numbering
+GPIO.setmode(GPIO.BCM)
+#Setup outputs
+GPIO.setup(DPIN, GPIO.OUT)
+#turn off pin
+GPIO.output(DPIN, GPIO.HIGH)

@@ -1,0 +1,26 @@
+{"Job":{
+    "ID":11,
+	"ChildID": 0,
+	"Start_Time":"",
+	"End_Time": "",
+	"ScriptName":  "Text_2_TestSMS.py",
+	"Name" : "TestSMS",
+	"Description": "Send Test SMS ",
+	"Device_ID"  : 2,
+	"Duration"  : "",
+	"DeviceOnOFF" :" ",
+	
+	"MDevice_ID": 0,
+	"MCondition" :"",
+	"Message":"This is a test SMS message",
+	"Condition" : "",
+	"CDevice_ID": 0,
+
+	"VerbalInstr": "{\"Seconds\": 5}",
+	"Minute"    :"",
+	"Hour"     : "",
+	"Day_Month" :"",
+	"Month"     :"",
+	"Day_Week"  :""
+}
+}

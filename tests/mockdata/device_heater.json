@@ -1,0 +1,11 @@
+{
+    "Device":{
+        "ID": 7,
+        "Name": "Heater1",
+        "Pin1": 17,
+        "Pin2": 0,
+        "Pin3": 0,
+        "Type": "Heater",
+        "Category": "Device"
+    }
+}

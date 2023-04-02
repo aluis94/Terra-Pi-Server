@@ -27,3 +27,35 @@ This README would normally document whatever steps are necessary to get your app
 
 * Repo owner or admin
 * Other community or team contact
+
+### Raspberry Pi - install ###
+
+#### Install twilio
+```
+sudo pip3 install twilio
+```
+
+#### Install SMTP server
+```
+sudo apt update
+sudo apt install ssmtp
+sudo apt-get install mailutils
+
+```
+#### Configure SMTP server
+```
+sudo nano /etc/ssmtp/ssmtp.conf
+```
+root=postmaster
+
+mailhub=smtp.gmail.com:587
+
+hostname=raspberrypi
+
+AuthUser={{email here}}@gmail.com
+
+AuthPass={{TheGmailPassword}}
+
+FromLineOverride=YES
+
+UseSTARTTLS=YES

@@ -1,0 +1,9 @@
+{
+    "Device":{
+        "ID": 1,
+        "Name": "Email",
+        "Category": "Notification",
+        "Type": "Email"
+        
+    }
+}

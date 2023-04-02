@@ -1,0 +1,11 @@
+{
+    "Device": {
+        "ID":5,
+        "Name": "Utrasonic",
+        "Pin1": 20,
+        "Pin2": 21,
+        "Pin3": 0,
+        "Type": "Motion",
+        "Category": "Sensor"
+    }
+}

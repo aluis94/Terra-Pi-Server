@@ -1,0 +1,11 @@
+{
+    "Device":{
+        "ID": 8,
+        "Name": "Light1",
+        "Pin1": 27,
+        "Pin2": 0,
+        "Pin3": 0,
+        "Type": "Light",
+        "Category": "Device"
+    }
+}

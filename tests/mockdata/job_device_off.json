@@ -1,0 +1,25 @@
+{"Job":{
+    "ID":1,
+	"ChildID": 0,
+	"Start_Time":"",
+	"End_Time": "",
+	"ScriptName":  "",
+	"Name" : "TestDeviceOff",
+	"Description": "Test Device off",
+	"Device_ID"  : 8,
+	"Duration"  : "",
+	"DeviceOnOFF" :"Off",
+	
+	"MDevice_ID": 0,
+	"MCondition" :"",
+	
+	"Condition" : "",
+	"CDevice_ID": 0,
+
+	"Minute"    :"*",
+	"Hour"     : "*",
+	"Day_Month" :"*",
+	"Month"     :"*",
+	"Day_Week"  :"*"
+}
+}

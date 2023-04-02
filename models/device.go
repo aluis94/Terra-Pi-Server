@@ -1,10 +1,13 @@
 package models
 
-//Company struct
+//Device struct
 type Device struct {
-	//company struct
-	Name string
-	ID   int
-	Pins []int
-	Type string
+	//Device struct
+	ID       int `gorm:"primaryKey"`
+	Name     string
+	Pin1     int
+	Pin2     int
+	Pin3     int
+	Type     string
+	Category string
 }

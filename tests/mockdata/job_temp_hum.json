@@ -1,0 +1,26 @@
+{"Job":{
+    "ID":1,
+	"ChildID": 0,
+	"Start_Time":"",
+	"End_Time": "",
+	"ScriptName":  "",
+	"Name" : "Read_Temp_Hum",
+	"Description": "Read temperature and humidity",
+	"Device_ID"  : 6,
+	"Duration"  : "",
+	"DeviceOnOFF" :" ",
+	
+	"MDevice_ID": 0,
+	"MCondition" :"",
+	"Message" : "",
+	"Condition" : "",
+	"CDevice_ID": 0,
+
+	"VerbalInstr": "",
+	"Minute"    :"",
+	"Hour"     : "",
+	"Day_Month" :"*",
+	"Month"     :"*",
+	"Day_Week"  :"*"
+}
+}

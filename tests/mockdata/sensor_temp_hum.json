@@ -1,0 +1,11 @@
+{
+    "Device":{
+        "ID": 6,
+        "Name": "DHT11",
+        "Pin1": 26,
+        "Pin2": 0,
+        "Pin3": 0,
+        "Type": "Temp_Hum",
+        "Category": "Sensor"
+    }
+}

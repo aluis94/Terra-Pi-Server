@@ -1,0 +1,26 @@
+{"Job":{
+    "ID":10,
+	"ChildID": 0,
+	"Start_Time":"",
+	"End_Time": "",
+	"ScriptName":  "Email_1_TestEmail.py",
+	"Name" : "TestEmail",
+	"Description": "Send Test Email",
+	"Device_ID"  : 1,
+	"Duration"  : "",
+	"DeviceOnOFF" :" ",
+	
+	"MDevice_ID": 0,
+	"MCondition" :"",
+	"Message":"This is a test email",
+	"Condition" : "",
+	"CDevice_ID": 0,
+
+	"VerbalInstr": "",
+	"Minute"    :"*/10",
+	"Hour"     : "*",
+	"Day_Month" :"*",
+	"Month"     :"*",
+	"Day_Week"  :"*"
+}
+}
