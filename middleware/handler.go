@@ -120,7 +120,7 @@ func ViewDevices(w http.ResponseWriter, r *http.Request) {
 func AddDataEntry(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,GET, OPTIONS,")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	var postBody models.PostBody
 	if r.Method == "POST" {
