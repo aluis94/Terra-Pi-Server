@@ -13,7 +13,7 @@ import (
 )
 
 var scriptsDir = "./scripts/"
-var templatesDir = "./templateEngine/scripts/"
+var templatesDir = "./templateEngine/templates/"
 var cronDir = "./cron/"
 
 type TempJob struct {

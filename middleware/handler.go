@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/aluis94/terra-pi-server/models"
 	"github.com/gorilla/mux"
@@ -105,7 +106,8 @@ func ViewDevice(w http.ResponseWriter, r *http.Request) {
 func ViewDevices(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	devices := viewDevices()
+	category := strings.ToLower(r.FormValue("category"))
+	devices := viewDevices(category)
 
 	if err := json.NewEncoder(w).Encode(devices); err != nil {
 		panic(err)
@@ -279,14 +281,17 @@ func DeleteJob(w http.ResponseWriter, r *http.Request) {
 func ViewJob(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	JobID, _ := strconv.Atoi(mux.Vars(r)["id"])
-	Job := viewJob(JobID)
-	if Job.ID == 0 {
-		fmt.Fprintf(w, "No Jobs found")
-	} else {
-		if err := json.NewEncoder(w).Encode(Job); err != nil {
-			panic(err)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	if r.Method == "GET" {
+		JobID, _ := strconv.Atoi(mux.Vars(r)["id"])
+		Job := viewJob(JobID)
+		if Job.ID == 0 {
+			fmt.Fprintf(w, "No Jobs found")
+		} else {
+			if err := json.NewEncoder(w).Encode(Job); err != nil {
+				panic(err)
+			}
 		}
 	}
 }
@@ -295,10 +300,19 @@ func ViewJob(w http.ResponseWriter, r *http.Request) {
 func ViewJobs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	Jobs := viewJobs()
+	if r.Method == "GET" {
+		if err := json.NewEncoder(w).Encode(Jobs); err != nil {
+			panic(err)
+		}
+	}
 
-	if err := json.NewEncoder(w).Encode(Jobs); err != nil {
-		panic(err)
+	if r.Method == "OPTIONS" {
+		if err := json.NewEncoder(w).Encode(Jobs); err != nil {
+			panic(err)
+		}
 	}
 
 }

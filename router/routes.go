@@ -163,7 +163,7 @@ var routes = Routes{
 		"ViewDataEntries",
 		"GET",
 		"/job/view-all",
-		middleware.ViewDataEntries,
+		middleware.ViewJobs,
 	},
 	Route{
 		"ViewJob",

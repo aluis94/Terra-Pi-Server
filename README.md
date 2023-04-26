@@ -1,4 +1,4 @@
-# README #
+# README - Terra-Pi Server #
 
 This README would normally document whatever steps are necessary to get your application up and running.
 
@@ -28,7 +28,30 @@ This README would normally document whatever steps are necessary to get your app
 * Repo owner or admin
 * Other community or team contact
 
-### Raspberry Pi - install ###
+## Raspberry Pi - install ###
+
+### Install latest version of GoLang on the Raspberyy pi
+Tutorial here:
+https://www.jeremymorgan.com/tutorials/raspberry-pi/install-go-raspberry-pi/
+
+### Required Golang packages
+* github.com/urfave/negroni v1.0.0
+
+* .com/gorilla/mux v1.8.0
+
+* .com/go-co-op/gocron v1.19.0
+
+* .com/jinzhu/gorm v1.9.16
+
+* .com/mattn/go-sqlite3 v1.14.16
+
+* golang.org/x/text v0.8.0
+
+* .com/robfig/cron/v3 v3.0.1
+
+* golang.org/x/sync v0.1.0
+
+* .com/jinzhu/inflection v1.0.0
 
 #### Install twilio
 ```
@@ -59,3 +82,6 @@ AuthPass={{TheGmailPassword}}
 FromLineOverride=YES
 
 UseSTARTTLS=YES
+
+
+

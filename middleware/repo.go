@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aluis94/terra-pi-server/cron"
 	"github.com/aluis94/terra-pi-server/models"
 	"github.com/aluis94/terra-pi-server/templateEngine"
 	"github.com/go-co-op/gocron"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/jinzhu/gorm"
 
@@ -60,7 +61,8 @@ func InitialMigration() {
 	jobs := viewJobs()
 	if len(jobs) != 0 { //if there is at least one job
 		fmt.Println("Starting scheduler")
-		scheduler = cron.RunCronJobs(&jobs)
+		//uncomment to start scheduler
+		//scheduler = cron.RunCronJobs(&jobs)
 	}
 }
 
@@ -128,15 +130,42 @@ func deleteDevice(id string) models.Device {
 }
 
 // view Devices
-func viewDevices() []models.Device {
+func viewDevices(category string) []models.Device {
+	//initialize caser for converting lower/title strings
+	caser := cases.Title(language.Und)
+
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
 		panic("failed to connect database")
 	}
 	defer db.Close()
 	var devices []models.Device
-	db.Find(&devices)
-	//fmt.Println("{}", Devices)
+
+	query := "select * from devices"
+	if category != "" {
+		if category == "devices" {
+			category = "Sensor"
+			query = query + " where category not in ('" + category + "')"
+		} else {
+			category = caser.String(category)
+			query = query + " where category in ('" + category + "')"
+		}
+
+		fmt.Println("Category filter = " + category)
+		rows, err := db.Raw(query).Rows() // (*sql.Rows, error)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var device models.Device
+			db.ScanRows(rows, &device)
+			devices = append(devices, device)
+		}
+	} else {
+		db.Find(&devices)
+	}
+
 	return devices
 }
 
