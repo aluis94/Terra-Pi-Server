@@ -25,7 +25,7 @@ func TestCreateFile(t *testing.T) {
 func TestDeleteFile(t *testing.T) {
 	scriptname := "test.txt"
 
-	templateEngine.DeleteFile(testScriptsDir + scriptname)
+	templateEngine.DeleteFile("", testScriptsDir+scriptname)
 
 	assert.NoFileExists(t, testScriptsDir+scriptname, "file still exists %s")
 }
@@ -189,19 +189,45 @@ func TestSimpleDeviceOffTemplate(t *testing.T) {
 }
 
 func TestSimpleDeviceONTemplate(t *testing.T) {
-	dfname := "device_light.json"
-	b1 := readJsonFile(dfname)
-	device := parseDeviceJson(b1)
-
 	jfname := "job_device_on.json"
-	b2 := readJsonFile(jfname)
-	job := parseJobJson(b2)
+	b1 := readJsonFile(jfname)
+	job := parseJobJson(b1)
 
+	sfname := "device_light.json"
+	b2 := readJsonFile(sfname)
+	sensor := parseDeviceJson(b2)
 	cDevice := models.Device{}
 	mDevice := models.Device{}
-	tempJob := templateEngine.TempJob{Job: job, Device: device, CondDevice: &mDevice, MsgDevice: &cDevice}
+	tempJob := templateEngine.TempJob{Job: job, Device: sensor, CondDevice: &mDevice, MsgDevice: &cDevice}
 	scriptName := templateEngine.CreateScriptName(&tempJob)
 	templateType := templateEngine.GetTemplateType(&tempJob)
 	templateEngine.GenerateScriptFromTemplate(scriptName, templateType, &tempJob, testTemplatesDir)
 	assert.Equal(t, currTemplateDir+"Light1_8_TestDeviceOn.py", scriptName)
+}
+
+func TestMultiTemplate(t *testing.T) {
+	jfname := "job_multi.json"
+	b1 := readJsonFile(jfname)
+	job := parseJobJson(b1)
+
+	sfname := "sensor_temp_hum.json"
+	b2 := readJsonFile(sfname)
+	sensor := parseDeviceJson(b2)
+
+	dfname := "device_heater.json"
+	b3 := readJsonFile(dfname)
+	device := parseDeviceJson(b3)
+
+	nfname := "device_email.json"
+	b4 := readJsonFile(nfname)
+	ndevice := parseDeviceJson(b4)
+
+	cDevice := device
+	mDevice := ndevice
+	tempJob := templateEngine.TempJob{Job: job, Device: sensor, CondDevice: cDevice, MsgDevice: mDevice}
+	scriptName := templateEngine.CreateScriptName(&tempJob)
+	templateType := templateEngine.GetTemplateType(&tempJob)
+	templateEngine.GenerateScriptFromTemplate(scriptName, templateType, &tempJob, testTemplatesDir)
+	assert.Equal(t, currTemplateDir+"DHT11_6_TestMulitTempEmailON.py", scriptName)
+
 }

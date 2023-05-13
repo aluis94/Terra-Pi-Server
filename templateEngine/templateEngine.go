@@ -34,7 +34,7 @@ func CreateFile(scriptName string) {
 
 }
 
-func DeleteFile(filename string) {
+func DeleteFile(dir string, filename string) {
 	err := os.Remove(filename)
 	Check(err)
 }
@@ -60,13 +60,21 @@ func CreateScript(job *models.Job, device *models.Device, msgDevice *models.Devi
 	return scriptName
 }
 
-func CreateScriptName(tempJob *TempJob) string {
+func ReplaceSpaceWithUnderscore(name string) string {
+	formatted := ""
+	formatted = strings.Replace(name, " ", "_", -1)
 
-	scriptname := scriptsDir + tempJob.Device.Name + "_" + strconv.Itoa(tempJob.Device.ID) + "_" + tempJob.Job.Name + ".py"
+	return formatted
+}
+
+func CreateScriptName(tempJob *TempJob) string {
+	jobName := ReplaceSpaceWithUnderscore(tempJob.Job.Name)
+	scriptname := scriptsDir + tempJob.Device.Name + "_" + strconv.Itoa(tempJob.Device.ID) + "_" + jobName + ".py"
 	//get message device and conditional device
 
 	return scriptname
 }
+
 func GenerateScriptFromTemplate(scriptName string, templateType string, tempJob *TempJob, templDir string) {
 	//create script file:output from template
 	path := scriptName
@@ -75,6 +83,7 @@ func GenerateScriptFromTemplate(scriptName string, templateType string, tempJob 
 		log.Println("create file: ", err)
 		return
 	}
+	defer f.Close()
 	//parse and execute template
 	templatePath := templDir + templateType
 	t, err := template.ParseFiles(templatePath)
@@ -97,6 +106,7 @@ func GetTemplateType(job *TempJob) string {
 		category = "simple"
 	} else {
 		category = "multi"
+		return category + extension
 	}
 	//Check Main Device Category: Notification, Device, Sensors
 	switch mCategory := strings.ToLower(job.Device.Category); mCategory {

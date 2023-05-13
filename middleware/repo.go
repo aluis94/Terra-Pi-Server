@@ -290,10 +290,10 @@ func createJob(Job *models.Job) {
 		condDevice := models.Device{}
 		//check if other devices exist
 		if Job.MDevice_ID != 0 {
-			db.Where("id = ?", Job.Device_ID).Find(&msgDevice)
+			db.Where("id = ?", Job.MDevice_ID).Find(&msgDevice)
 		}
 		if Job.CDevice_ID != 0 {
-			db.Where("id = ?", Job.Device_ID).Find(&condDevice)
+			db.Where("id = ?", Job.CDevice_ID).Find(&condDevice)
 		}
 
 		scriptName := templateEngine.CreateScript(Job, &myDevice, &msgDevice, &condDevice)
@@ -311,6 +311,7 @@ func createJob(Job *models.Job) {
 
 // delete Job
 func deleteJob(id string) models.Job {
+	scriptsDir := "./scripts/"
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
 		panic("failed to connect DataEntrybase")
@@ -320,7 +321,8 @@ func deleteJob(id string) models.Job {
 	var Job models.Job
 	db.Where("id = ?", id).Find(&Job)
 	db.Unscoped().Delete(&Job)
-
+	script := Job.ScriptName
+	templateEngine.DeleteFile(scriptsDir, script)
 	fmt.Println("Successfully Deleted Job")
 	return Job
 }
@@ -379,11 +381,12 @@ func editJob(Job *models.Job) {
 	dbJob.CDevice_ID = Job.CDevice_ID
 	dbJob.Condition = Job.Condition
 	//CRON
+	dbJob.VerbalInstr = Job.VerbalInstr
 	dbJob.Minute = Job.Minute
-	dbJob.Hour = Job.Minute
-	dbJob.Day_Month = Job.Minute
-	dbJob.Month = Job.Minute
-	dbJob.Day_Week = Job.Minute
+	dbJob.Hour = Job.Hour
+	dbJob.Day_Month = Job.Day_Month
+	dbJob.Month = Job.Month
+	dbJob.Day_Week = Job.Day_Week
 
 	if dbJob.ID != 0 {
 		db.Save(&dbJob)
