@@ -25,7 +25,7 @@ type VerbalInstruction struct {
 	At           string
 }
 
-var scriptsDir = "scripts/"
+var scriptsDir = ""
 
 func check(err error) {
 	if err != nil {
@@ -33,61 +33,83 @@ func check(err error) {
 	}
 }
 
+func checkScriptErr(err error, out bytes.Buffer, out_err bytes.Buffer) {
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(out.String())
+		fmt.Println(out_err.String())
+	}
+}
+
 func ExecScript(scriptName string) string {
 	var out bytes.Buffer
 	var err_out bytes.Buffer
 	cmd := exec.Command("python", scriptsDir+scriptName)
-	err := cmd.Run()
 	cmd.Stdout = &out
 	cmd.Stderr = &err_out
-	check(err)
+	err := cmd.Run()
+
+	checkScriptErr(err, out, err_out)
 	return out.String() + "\n" + err_out.String()
 }
 
-func RunCronJobs(jobs *[]models.Job) *gocron.Scheduler {
+func RunCronJobs(jobs *[]models.Job) (*gocron.Scheduler, []*gocron.Job) {
 	//1. Create new scheduler
 	s := gocron.NewScheduler(time.UTC)
 	//2. Get jobs
+	var tempjobs []*gocron.Job
+	var tempjob *gocron.Job
+
 	for _, job := range *jobs {
 		//3. Schedule jobs
 		if job.VerbalInstr != "" {
-			setVerbalInstruction(&job, s)
+			tempjob = setVerbalInstruction(&job, s)
+
 		} else if job.Minute != "" && job.Hour != "" && job.Day_Month != "" && job.Month != "" && job.Day_Week != "" {
 			expr := CreateCronExpression(&job)
 			fmt.Println(job.ScriptName)
-			s.Cron(expr).Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
-		}
+			tempjob, _ = s.Cron(expr).Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
 
+		}
+		tempjobs = append(tempjobs, tempjob)
 	}
 	//4.
-	s.StartAsync()
-	return s
+
+	return s, tempjobs
 
 }
 
-func setVerbalInstruction(job *models.Job, s *gocron.Scheduler) {
+func setVerbalInstruction(job *models.Job, s *gocron.Scheduler) *gocron.Job {
 	var vi VerbalInstruction
+	var myjob *gocron.Job
+	var myerr error
 	if err := json.Unmarshal([]byte(job.VerbalInstr), &vi); err != nil {
 		fmt.Println("Error with unmarshal")
 	}
 	if vi.Seconds != 0 {
-		s.Every(vi.Seconds).Seconds().Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+		fmt.Println("Scheduled every ", vi.Seconds, " seconds ", " scriptname: ", job.ScriptName)
+		myjob, myerr = s.Every(vi.Seconds).Seconds().Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
+
 	}
 	if vi.Minutes != 0 {
-		s.Every(vi.Minutes).Minutes().Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+		fmt.Println("Scheduled every ", vi.Minutes, " minutes", " scriptname: ", job.ScriptName)
+		myjob, myerr = s.Every(vi.Minutes).Minutes().Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
 	}
 	if vi.Hours != 0 {
-		s.Every(vi.Hours).Hours().Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+		fmt.Println("Scheduled every ", vi.Hours, " hours", " scriptname: ", job.ScriptName)
+		myjob, myerr = s.Every(vi.Hours).Hours().Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
 	}
 	if vi.Days != 0 {
+		fmt.Println("Scheduled every ", vi.Days, " days", " scriptname: ", job.ScriptName)
 		if vi.Days == 1 && vi.At != "" {
-			s.Every(vi.Days).Day().At(vi.At).Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+			myjob, myerr = s.Every(vi.Days).Day().At(vi.At).Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
 		} else {
-			s.Every(vi.Days).Days().Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+			myjob, myerr = s.Every(vi.Days).Days().Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
 		}
 
 	}
 	if vi.Months != 0 {
+		fmt.Println("Scheduled every ", vi.Months, " months", " scripname: ", job.ScriptName)
 		var daysM []int
 		stringDOM := strings.Split(vi.MonthsString, ",")
 		for _, dOM := range stringDOM {
@@ -97,14 +119,17 @@ func setVerbalInstruction(job *models.Job, s *gocron.Scheduler) {
 
 		}
 		if vi.Months == 1 && vi.MonthsString != "" && daysM[0] != 0 {
-			s.Every(vi.Months).Month(daysM...).Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+			myjob, myerr = s.Every(vi.Months).Month(daysM...).Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
 		} else {
-			s.Every(vi.Months).Months().Tag(job.ScriptName).Do(ExecScript(job.ScriptName))
+			myjob, myerr = s.Every(vi.Months).Months().Tag(job.ScriptName).Do(func() { ExecScript(job.ScriptName) })
 
 		}
 
 	}
-
+	if myerr != nil {
+		fmt.Println(myerr)
+	}
+	return myjob
 }
 
 func CreateCronExpression(job *models.Job) string {

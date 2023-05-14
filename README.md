@@ -83,5 +83,7 @@ FromLineOverride=YES
 
 UseSTARTTLS=YES
 
+ pip3 install Adafruit_Python_DHT
+
 
 

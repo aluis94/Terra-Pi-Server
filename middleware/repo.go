@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aluis94/terra-pi-server/cron"
 	"github.com/aluis94/terra-pi-server/models"
 	"github.com/aluis94/terra-pi-server/templateEngine"
 	"github.com/go-co-op/gocron"
@@ -16,11 +17,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var scheduler *gocron.Scheduler
+var scheduler gocron.Scheduler
+var x = 10
 
 // InitialMigration gorm
 func InitialMigration() {
 	//scheduler
+	fmt.Println(x)
+	xp := &x
+	*xp = 5
 
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
@@ -58,12 +63,26 @@ func InitialMigration() {
 
 	//startScheduler
 	//get all jobs
+
 	jobs := viewJobs()
 	if len(jobs) != 0 { //if there is at least one job
 		fmt.Println("Starting scheduler")
 		//uncomment to start scheduler
-		//scheduler = cron.RunCronJobs(&jobs)
+		ps, tempjobs := cron.RunCronJobs(&jobs)
+		fmt.Println("Starting ASYNC...")
+
+		scheduler = *ps
+		for _, tempjob := range tempjobs {
+			scheduler.Job(tempjob)
+			scheduler.Update()
+		}
+
+		scheduler.StartAsync()
+		fmt.Println("Scheduler # of jobs:  ", scheduler.Len())
+		fmt.Println("Scheduler jobs: ", scheduler.Jobs())
+
 	}
+
 }
 
 /**Devices**/
@@ -82,6 +101,7 @@ func createDevice(Device *models.Device) {
 
 // Edit Device
 func editDevice(Device *models.Device) {
+
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
 		panic("failed to connect DataEntrybase")
@@ -111,6 +131,7 @@ func editDevice(Device *models.Device) {
 //Delete Device
 
 func deleteDevice(id string) models.Device {
+
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
 		panic("failed to connect DataEntrybase")
@@ -125,7 +146,8 @@ func deleteDevice(id string) models.Device {
 	} else {
 		fmt.Println("No Device deleted")
 	}
-
+	fmt.Println("Starting scheduler")
+	scheduler.StartAsync()
 	return device
 }
 
@@ -274,6 +296,7 @@ func editDataEntry(DataEntry *models.DataEntry) {
 
 // Create Job
 func createJob(Job *models.Job) {
+
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
 		panic("failed to connect DataEntrybase")
@@ -306,11 +329,33 @@ func createJob(Job *models.Job) {
 	} else {
 		fmt.Println("No exisiting device, no job created")
 	}
+	jobs := viewJobs()
+
+	if len(jobs) != 0 { //if there is at least one job
+		fmt.Println("Stopping scheduler")
+		scheduler.Stop()
+		fmt.Println("Starting scheduler")
+		//uncomment to start scheduler
+		ps, tempjobs := cron.RunCronJobs(&jobs)
+		fmt.Println("Starting ASYNC...")
+
+		scheduler = *ps
+		for _, tempjob := range tempjobs {
+			scheduler.Job(tempjob)
+			scheduler.Update()
+		}
+
+		scheduler.StartAsync()
+		fmt.Println(scheduler.Len())
+	}
 
 }
 
 // delete Job
 func deleteJob(id string) models.Job {
+	fmt.Println("Stopping scheduler")
+	scheduler.Clear()
+	scheduler.Stop()
 	scriptsDir := "./scripts/"
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
@@ -324,6 +369,25 @@ func deleteJob(id string) models.Job {
 	script := Job.ScriptName
 	templateEngine.DeleteFile(scriptsDir, script)
 	fmt.Println("Successfully Deleted Job")
+	//fmt.Println("Starting scheduler")
+	//defer scheduler.StartAsync()
+	jobs := viewJobs()
+	if len(jobs) != 0 { //if there is at least one job
+		fmt.Println("Starting scheduler")
+		//uncomment to start scheduler
+		ps, tempjobs := cron.RunCronJobs(&jobs)
+		fmt.Println("Starting ASYNC...")
+
+		scheduler = *ps
+		for _, tempjob := range tempjobs {
+			scheduler.Job(tempjob)
+			scheduler.Update()
+		}
+
+		scheduler.StartAsync()
+		fmt.Println(scheduler.Len())
+	}
+
 	return Job
 }
 
@@ -354,6 +418,12 @@ func viewJobs() []models.Job {
 
 // editJob
 func editJob(Job *models.Job) {
+	fmt.Println(x)
+	fmt.Println("Stopping scheduler")
+	fmt.Println("scheduler len", scheduler.Len())
+
+	scheduler.Clear()
+	scheduler.Stop()
 	db, err := gorm.Open("sqlite3", "terra-pi.db")
 	if err != nil {
 		panic("failed to connect DataEntrybase")
@@ -393,6 +463,43 @@ func editJob(Job *models.Job) {
 		fmt.Println("Successfully Updated Job")
 	} else {
 		fmt.Println("Job does not exist")
+	}
+	//fmt.Println("Starting scheduler")
+	//defer scheduler.StartAsync()
+	jobs := viewJobs()
+	//update script
+	var myDevice models.Device
+	fmt.Println(Job.Device_ID)
+	fmt.Println(myDevice)
+	db.Where("id = ?", Job.Device_ID).Find(&myDevice)
+	if myDevice.ID != 0 {
+		//createscript
+		msgDevice := models.Device{}
+		condDevice := models.Device{}
+		//check if other devices exist
+		if Job.MDevice_ID != 0 {
+			db.Where("id = ?", Job.MDevice_ID).Find(&msgDevice)
+		}
+		if Job.CDevice_ID != 0 {
+			db.Where("id = ?", Job.CDevice_ID).Find(&condDevice)
+		}
+
+		templateEngine.CreateScript(Job, &myDevice, &msgDevice, &condDevice)
+		if len(jobs) != 0 { //if there is at least one job
+			fmt.Println("Starting scheduler")
+			//uncomment to start scheduler
+			ps, tempjobs := cron.RunCronJobs(&jobs)
+			fmt.Println("Starting ASYNC...")
+
+			scheduler = *ps
+			for _, tempjob := range tempjobs {
+				scheduler.Job(tempjob)
+				scheduler.Update()
+			}
+
+			scheduler.StartAsync()
+			fmt.Println(scheduler.Len())
+		}
 	}
 
 }
