@@ -231,3 +231,7 @@ func TestMultiTemplate(t *testing.T) {
 	assert.Equal(t, currTemplateDir+"DHT11_6_TestMulitTempEmailON.py", scriptName)
 
 }
+
+func TestWriteData(t *testing.T) {
+	templateEngine.WriteData()
+}

@@ -1,15 +1,23 @@
 package templateEngine
 
 import (
+	"bufio"
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/aluis94/terra-pi-server/models"
+	"github.com/jinzhu/gorm"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	//sqlite3
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var scriptsDir = "./scripts/"
@@ -37,6 +45,7 @@ func CreateFile(scriptName string) {
 func DeleteFile(dir string, filename string) {
 	err := os.Remove(filename)
 	Check(err)
+
 }
 
 // Check function
@@ -137,4 +146,57 @@ func ReadTemplateFile(path string) []byte {
 	buff, err := os.ReadFile(path)
 	Check(err)
 	return buff
+}
+
+func WriteData() {
+	// HTTP endpoint
+	fname := "./scripts/data.txt"
+	db, err := gorm.Open("sqlite3", "terra-pi.db")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("failed to connect DataEntrybase")
+	}
+
+	defer db.Close()
+
+	readFile, err := os.Open(fname)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner := bufio.NewScanner(readFile)
+
+	fileScanner.Split(bufio.ScanLines)
+	// Create a HTTP post request
+	var de models.DataEntry
+	db.Last(&de)
+	fmt.Println(de.ID)
+	currID := de.ID + 1
+	var Entry *models.PostBody
+
+	for fileScanner.Scan() {
+		dataEntry := models.DataEntry{}
+		fmt.Println(strings.Replace(fileScanner.Text(), "'", "\"", -1))
+		err = json.Unmarshal([]byte(strings.Replace(fileScanner.Text(), "'", "\"", -1)), &Entry)
+		if err != nil {
+			fmt.Println("Error during Unmarshal(): ", err)
+		}
+		dataEntry.ID = currID
+		dataEntry.Device_ID = Entry.DataEntry.Device_ID
+		dataEntry.Type = Entry.DataEntry.Type
+		dataEntry.Value = Entry.DataEntry.Value
+		dataEntry.Unit = Entry.DataEntry.Unit
+		currTime := time.Now().Format("2006-01-02 15:04:05")
+		dataEntry.TimeStamp = currTime
+		fmt.Println("Entry before:", dataEntry)
+		db.Create(dataEntry)
+		fmt.Println("DataEntry created")
+
+		fmt.Println("Entry:", dataEntry)
+		currID = currID + 1
+
+	}
+	defer CreateFile(fname)
+	defer readFile.Close()
+
 }

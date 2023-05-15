@@ -41,8 +41,15 @@ while not didRead:
 		print("Sensor failure. Check wiring.")
 	time.sleep(3)
 myobj = {"DataEntry": {"Device_ID": deviceID,"Type": deviceType ,"Value": humidity,"Unit": "Percent"}}
-post_response = requests.post(url, json = myobj)
-post_response_json = post_response.json()
+#Save data entry to DB
+print("Saving to DB")
+#Write to file
+file1 = open("./scripts/data.txt", "a")
+file1.write(str(myobj)+"\n")
+file1.close()
+#post_response = requests.post(url, json = myobj)
+#post_response_json = post_response.json()
+
 {{else}}{{if eq .Device.Type "Motion"}}
 #Read motion sensor distance
 Unit ="Motion"
@@ -86,11 +93,14 @@ while (not didRead):
 value = LD_IN
 {{else}}#do Nothing{{end}}{{end}}{{end}}
 {{if or (eq .Device.Type "Temp_Hum") (eq .Device.Type "Motion") (eq .Device.Type "Light") }}
-#Save data entry to DB
-print("Saving to DB")
+
 myobj = {"DataEntry": {"Device_ID": deviceID,"Type": deviceType ,"Value": value,"Unit": unit}}
-post_response = requests.post(url, json = myobj)
-post_response_json = post_response.json()
+#Write to file
+file1 = open("./scripts/data.txt", "a")
+file1.write(str(myobj)+"\n")
+file1.close()
+#post_response = requests.post(url, json = myobj)
+#post_response_json = post_response.json()
 print(post_response_json)
 {{end}}
 

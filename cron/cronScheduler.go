@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/aluis94/terra-pi-server/models"
+	"github.com/aluis94/terra-pi-server/templateEngine"
 	"github.com/go-co-op/gocron"
 )
 
@@ -50,7 +51,9 @@ func ExecScript(scriptName string) string {
 	err := cmd.Run()
 
 	checkScriptErr(err, out, err_out)
+	templateEngine.WriteData()
 	return out.String() + "\n" + err_out.String()
+
 }
 
 func RunCronJobs(jobs *[]models.Job) (*gocron.Scheduler, []*gocron.Job) {

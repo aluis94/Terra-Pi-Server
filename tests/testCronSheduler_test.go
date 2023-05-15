@@ -22,7 +22,7 @@ func TestExecSMSScript(t *testing.T) {
 }
 func TestSimpleJob(t *testing.T) {
 	var jobs []models.Job
-	s := cron.RunCronJobs(&jobs)
+	s, _ := cron.RunCronJobs(&jobs)
 	time.Sleep(5 * time.Second)
 	s.Stop()
 	assert.True(t, true)
